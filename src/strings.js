@@ -11,5 +11,10 @@
 *   '',  'bb'  => 'bb'
 */
 function concatenateStrings(value1, value2) {
-    return value1 + value2;
+  return value1 + value2;
 }
+
+// Экспортируем функцию для использования в тестах
+module.exports = {
+  concatenateStrings,
+};
