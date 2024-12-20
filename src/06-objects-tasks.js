@@ -19,8 +19,12 @@
  *    console.log(r.height);      // => 20
  *    console.log(r.getArea());   // => 200
  */
-function Rectangle(/* width, height */) {
-  throw new Error('Not implemented');
+function Rectangle(width, height) {
+  this.width = width;
+  this.height = height;
+  this.getArea = function () {
+    return this.width * this.height;
+  };
 }
 
 /**
@@ -33,8 +37,8 @@ function Rectangle(/* width, height */) {
  *    [1,2,3]   =>  '[1,2,3]'
  *    { width: 10, height : 20 } => '{"height":10,"width":20}'
  */
-function getJSON(/* obj */) {
-  throw new Error('Not implemented');
+function getJSON(obj) {
+  return JSON.stringify(obj);
 }
 
 /**
@@ -48,8 +52,12 @@ function getJSON(/* obj */) {
  *    const r = fromJSON(Circle.prototype, '{"radius":10}');
  *
  */
-function fromJSON(/* proto, json */) {
-  throw new Error('Not implemented');
+function fromJSON(proto, json) {
+  const parsedObject = JSON.parse(json);
+  const obj = Object.create(proto);
+  Object.assign(obj, parsedObject);
+
+  return obj;
 }
 
 /**
@@ -106,36 +114,104 @@ function fromJSON(/* proto, json */) {
  *  For more examples see unit tests.
  */
 
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  result: '',
+  order: 0,
+
+  element(value) {
+    this.validateOrder(1);
+    this.validateUnique('element');
+    const newObj = this.clone();
+    newObj.result += value;
+    newObj.order = 1;
+    newObj.hasElement = true;
+    return newObj;
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  id(value) {
+    this.validateOrder(2);
+    this.validateUnique('id');
+    const newObj = this.clone();
+    newObj.result += `#${value}`;
+    newObj.order = 2;
+    newObj.hasId = true;
+    return newObj;
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    this.validateOrder(3);
+    const newObj = this.clone();
+    newObj.result += `.${value}`;
+    newObj.order = 3;
+    return newObj;
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    this.validateOrder(4);
+    const newObj = this.clone();
+    newObj.result += `[${value}]`;
+    newObj.order = 4;
+    return newObj;
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    this.validateOrder(5);
+    const newObj = this.clone();
+    newObj.result += `:${value}`;
+    newObj.order = 5;
+    return newObj;
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    this.validateOrder(6);
+    this.validateUnique('pseudoElement');
+    const newObj = this.clone();
+    newObj.result += `::${value}`;
+    newObj.order = 6;
+    newObj.hasPseudoElement = true;
+    return newObj;
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  combine(selector1, combinator, selector2) {
+    const newObj = this.clone();
+    newObj.result = `${selector1.stringify()} ${combinator} ${selector2.stringify()}`;
+    return newObj;
+  },
+
+  stringify() {
+    return this.result;
+  },
+
+  validateOrder(newOrder) {
+    if (newOrder < this.order) {
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element',
+      );
+    }
+  },
+
+  validateUnique(part) {
+    if (this[`has${capitalize(part)}`]) {
+      throw new Error(
+        'Element, id and pseudo-element should not occur more then one time inside the selector',
+      );
+    }
+  },
+
+  clone() {
+    const newObj = Object.create(cssSelectorBuilder);
+    newObj.result = this.result;
+    newObj.order = this.order;
+    newObj.hasElement = this.hasElement || false;
+    newObj.hasId = this.hasId || false;
+    newObj.hasPseudoElement = this.hasPseudoElement || false;
+    return newObj;
   },
 };
-
 module.exports = {
   Rectangle,
   getJSON,
