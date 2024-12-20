@@ -27,8 +27,18 @@
  *      .catch((error) => console.log(error.message)) // 'Error: Wrong parameter is passed!
  *                                                    //  Ask her again.';
  */
-function willYouMarryMe(/* isPositiveAnswer */) {
-  throw new Error('Not implemented');
+function willYouMarryMe(isPositiveAnswer) {
+  return new Promise((resolve, reject) => {
+    if (typeof isPositiveAnswer === 'boolean') {
+      if (isPositiveAnswer) {
+        resolve('Hooray!!! She said "Yes"!');
+      } else {
+        resolve('Oh no, she said "No".');
+      }
+    } else {
+      reject(new Error('Wrong parameter is passed! Ask her again.'));
+    }
+  });
 }
 
 /**
@@ -46,8 +56,8 @@ function willYouMarryMe(/* isPositiveAnswer */) {
  *    })
  *
  */
-function processAllPromises(/* array */) {
-  throw new Error('Not implemented');
+function processAllPromises(array) {
+  return Promise.all(array);
 }
 
 /**
@@ -69,8 +79,8 @@ function processAllPromises(/* array */) {
  *    })
  *
  */
-function getFastestPromise(/* array */) {
-  throw new Error('Not implemented');
+function getFastestPromise(array) {
+  return Promise.race(array);
 }
 
 /**
@@ -90,8 +100,32 @@ function getFastestPromise(/* array */) {
  *    });
  *
  */
-function chainPromises(/* array, action */) {
-  throw new Error('Not implemented');
+function chainPromises(array, action) {
+  return new Promise((resolve, reject) => {
+    const results = []; // To store resolved values
+    let completedPromises = 0; // To track processed promises
+
+    array.forEach((promise, index) => {
+      promise
+        .then((value) => {
+          results[index] = value; // Store the resolved value
+        })
+        .catch(() => {
+          // Ignore rejected promises
+        })
+        .finally(() => {
+          completedPromises += 1;
+          // Resolve when all promises are processed
+          if (completedPromises === array.length) {
+            try {
+              resolve(results.filter((v) => v !== undefined).reduce(action));
+            } catch (err) {
+              reject(err); // Handle errors in action
+            }
+          }
+        });
+    });
+  });
 }
 
 module.exports = {
